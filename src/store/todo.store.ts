@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect } from 'react';
 import { atom, useRecoilState } from 'recoil';
 
 type Todo = {
@@ -12,13 +15,13 @@ type Todos = {
 };
 
 const todoKey = 'todo';
-const initialTodos = JSON.parse(localStorage.getItem(todoKey) ?? '{}') as Todos;
 const todosState = atom({
   key: todoKey,
-  default: initialTodos,
+  default: {} as Todos,
   effects: [
     ({ onSet }) => {
       onSet((newTodos) => {
+        console.log({ newTodos });
         localStorage.setItem(todoKey, JSON.stringify(newTodos));
       });
     },
@@ -27,6 +30,14 @@ const todosState = atom({
 
 const useTodo = () => {
   const [todos, setTodos] = useRecoilState(todosState);
+  
+  useEffect(() => {
+    const localTodos = localStorage.getItem(todoKey);
+    if (localTodos) {
+      setTodos(JSON.parse(localTodos));
+    }
+  }, []);
+
   const addTodo = (todo: Todo) => {
     setTodos((oldTodos) => ({
       ...oldTodos,

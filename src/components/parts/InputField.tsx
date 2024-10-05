@@ -11,6 +11,7 @@ const InputField = styled.input`
   line-height: 28px;
   text-align: left;
   width: 100%;
+  box-sizing: border-box;
   &:focus {
     outline: none;
   }

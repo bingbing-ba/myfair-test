@@ -37,6 +37,7 @@ const InputBase = ({ className }: { className?: string }) => {
         type="text"
         placeholder="할일을 입력해 주세요"
         value={text}
+        data-testid={'todo-input'}
         onChange={(e) => {
           setText((e.target as HTMLInputElement).value);
         }}

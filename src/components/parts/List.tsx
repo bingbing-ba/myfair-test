@@ -1,28 +1,62 @@
-import styled from '@emotion/styled';
 import CheckSVG from '@/public/Check.svg';
 import CloseSVG from '@/public/Close.svg';
+import useTodo from '@/src/store/todo.store';
+import styled from '@emotion/styled';
 import Image from 'next/image';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useMemo } from 'react';
+
+type Filter = 'all' | 'todo' | 'done';
 
 const List = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const filter = correctFilter(searchParams.get('filter'));
+
+  const setFilter = useCallback(
+    (filter: Filter) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('filter', filter);
+      router.replace(`${pathname}?${params.toString()}`);
+    },
+    [searchParams, router]
+  );
+
+  const { todos } = useTodo();
+  const filteredTodos = useMemo(() => {
+    const sortedTodos = Object.values(todos).sort((a, b) => a.createdAt - b.createdAt);
+    if (filter === 'all') {
+      return sortedTodos;
+    }
+    if (filter === 'todo') {
+      return sortedTodos.filter((todo) => !todo.done);
+    }
+    return sortedTodos.filter((todo) => todo.done);
+  }, [todos, filter]);
+
   return (
     <Container>
       <FilterWrapper>
-        <FilterItem active>All</FilterItem>
-        <FilterItem>To Do</FilterItem>
-        <FilterItem>Done</FilterItem>
+        <FilterItem active={filter === 'all'} onClick={() => setFilter('all')}>
+          All
+        </FilterItem>
+        <FilterItem active={filter === 'todo'} onClick={() => setFilter('todo')}>
+          To Do
+        </FilterItem>
+        <FilterItem active={filter === 'done'} onClick={() => setFilter('done')}>
+          Done
+        </FilterItem>
       </FilterWrapper>
       <TodoItemWrapper>
-        <TodoCounter>총 4개</TodoCounter>
-        <TodoItem>
-          <Check />
-          <Text>Daily Scrum 작성하기</Text>
-          <Close />
-        </TodoItem>
-        <TodoItem>
-          <Check done />
-          <Text>뭔가 완료한거</Text>
-          <Close />
-        </TodoItem>
+        <TodoCounter>총 {filteredTodos.length}개</TodoCounter>
+        {filteredTodos.map((todo) => (
+          <TodoItem key={todo.id}>
+            <Check done={todo.done} />
+            <Text>{todo.text}</Text>
+            <Close />
+          </TodoItem>
+        ))}
       </TodoItemWrapper>
     </Container>
   );
@@ -123,3 +157,10 @@ const TodoCounter = styled.div`
 const Close = () => <Image src={CloseSVG} alt="close" style={{ cursor: 'pointer' }} />;
 
 export default List;
+
+/** search params 오타 방지용 */
+const correctFilter = (filter: string | null): Filter => {
+  if (filter === 'todo') return filter;
+  if (filter === 'done') return filter;
+  return 'all';
+};

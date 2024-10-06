@@ -1,6 +1,6 @@
 import CheckSVG from '@/public/Check.svg';
 import CloseSVG from '@/public/Close.svg';
-import useTodo from '@/src/store/todo.store';
+import useTodo, { Todo } from '@/src/store/todo.store';
 import styled from '@emotion/styled';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -23,9 +23,9 @@ const List = () => {
     [searchParams, router]
   );
 
-  const { todos } = useTodo();
+  const { todos, updateTodo, deleteTodo } = useTodo();
   const filteredTodos = useMemo(() => {
-    const sortedTodos = Object.values(todos).sort((a, b) => a.createdAt - b.createdAt);
+    const sortedTodos = Object.values(todos).sort((a, b) => b.createdAt - a.createdAt);
     if (filter === 'all') {
       return sortedTodos;
     }
@@ -34,6 +34,22 @@ const List = () => {
     }
     return sortedTodos.filter((todo) => todo.done);
   }, [todos, filter]);
+
+  const toggleDone = useCallback(
+    (todo: Todo) => {
+      const toggledTodo: Todo = { ...todo, done: !todo.done };
+      updateTodo(toggledTodo);
+    },
+    [updateTodo]
+  );
+
+  const removeTodo = useCallback(
+    (todo: Todo) => {
+      if (!confirm('삭제할까요?')) return;
+      deleteTodo(todo);
+    },
+    [deleteTodo]
+  );
 
   return (
     <Container>
@@ -52,9 +68,11 @@ const List = () => {
         <TodoCounter>총 {filteredTodos.length}개</TodoCounter>
         {filteredTodos.map((todo) => (
           <TodoItem key={todo.id}>
-            <Check done={todo.done} />
-            <Text>{todo.text}</Text>
-            <Close />
+            <Check done={todo.done} onClick={() => toggleDone(todo)} />
+            <Text done={todo.done} onClick={() => toggleDone(todo)}>
+              {todo.text}
+            </Text>
+            <DeleteButton onClick={() => removeTodo(todo)} />
           </TodoItem>
         ))}
       </TodoItemWrapper>
@@ -115,21 +133,22 @@ const Checked = styled.div`
   height: 32px;
   border-radius: 16px;
   background: #2182f3;
+  border: 1px solid #2182f3;
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
 `;
 
-const Check = ({ done }: { done?: boolean }) => {
+const Check = ({ done, onClick }: { done?: boolean; onClick: () => void }) => {
   if (done)
     return (
-      <Checked>
+      <Checked onClick={onClick}>
         <Image src={CheckSVG} alt="checked" />
       </Checked>
     );
 
-  return <NotChecked />;
+  return <NotChecked onClick={onClick} />;
 };
 
 const TodoItem = styled.div`
@@ -139,12 +158,13 @@ const TodoItem = styled.div`
   gap: 16px;
 `;
 
-const Text = styled.div`
+const Text = styled.div<{ done: boolean }>`
   flex-grow: 1;
   font-size: 20px;
   font-weight: 400;
   line-height: 28px;
   cursor: pointer;
+  color: ${(props) => (props.done ? '#868686' : '#111')};
 `;
 
 const TodoCounter = styled.div`
@@ -154,7 +174,22 @@ const TodoCounter = styled.div`
   padding: 16px;
 `;
 
-const Close = () => <Image src={CloseSVG} alt="close" style={{ cursor: 'pointer' }} />;
+const ResetButton = styled.button`
+  border: none;
+  margin: 0;
+  padding: 0;
+  width: auto;
+  overflow: visible;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+`;
+
+const DeleteButton = ({ onClick }: { onClick: () => void }) => (
+  <ResetButton onClick={onClick}>
+    <Image src={CloseSVG} alt="delete" />
+  </ResetButton>
+);
 
 export default List;
 

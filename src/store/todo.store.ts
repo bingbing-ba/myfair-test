@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { atom, useRecoilState } from 'recoil';
 
-type Todo = {
+export type Todo = {
   id: string;
   done: boolean;
   createdAt: number;
@@ -21,7 +21,6 @@ const todosState = atom({
   effects: [
     ({ onSet }) => {
       onSet((newTodos) => {
-        console.log({ newTodos });
         localStorage.setItem(todoKey, JSON.stringify(newTodos));
       });
     },
@@ -30,7 +29,7 @@ const todosState = atom({
 
 const useTodo = () => {
   const [todos, setTodos] = useRecoilState(todosState);
-  
+
   useEffect(() => {
     const localTodos = localStorage.getItem(todoKey);
     if (localTodos) {
@@ -59,9 +58,12 @@ const useTodo = () => {
     if (todos[todo.id] === undefined) {
       throw new Error(`todo ${todo.id} not found`);
     }
-    delete todos[todo.id];
-    setTodos({
+    const copied = {
       ...todos,
+    };
+    delete copied[todo.id];
+    setTodos({
+      ...copied,
     });
   };
 

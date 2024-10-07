@@ -24,13 +24,16 @@ jest.mock('next/navigation', () => ({
 
 describe('Todo User List Page', () => {
   describe('Input Field', () => {
-    it('빈 문자열로 todo를 만들 수 없다.', async () => {
-      const testId = 'todo-input';
+    const testId = 'todo-input';
+    beforeEach(() => {
       render(
         <RecoilRoot>
           <InputField />
         </RecoilRoot>
       );
+    });
+
+    it('빈 문자열로 todo를 만들 수 없다.', async () => {
       const input = screen.getByTestId(testId) as HTMLInputElement;
 
       await userEvent.click(input);
@@ -48,7 +51,24 @@ describe('Todo User List Page', () => {
       expect(todoLength).toBe(0);
     });
 
-    it('문자열을 입력하고 Enter 하면 todo가 생성된다.', async () => {});
+    it('문자열을 입력하고 Enter 하면 해당 문자열의 todo가 생성된다.', async () => {
+      const input = screen.getByTestId(testId) as HTMLInputElement;
+
+      const todoText = 'first Todo';
+      await userEvent.type(input, todoText);
+      await userEvent.keyboard('[Enter]');
+
+      const { result } = renderHook(() => useTodo(), {
+        wrapper: RecoilRoot,
+      });
+
+      const todoLength = Object.values(result.current.todos).length;
+      expect(todoLength).toBe(1);
+
+      const todo = Object.values(result.current.todos).find((todo) => todo.text === todoText);
+      expect(todo?.text).toBe(todoText);
+      expect(todo?.done).toBe(false);
+    });
   });
 
   describe('List', () => {

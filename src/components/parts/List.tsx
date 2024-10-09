@@ -67,8 +67,8 @@ const List = () => {
       <TodoItemWrapper>
         <TodoCounter>총 {filteredTodos.length}개</TodoCounter>
         {filteredTodos.map((todo) => (
-          <TodoItem key={todo.id}>
-            <Check done={todo.done} onClick={() => toggleDone(todo)} />
+          <TodoItem key={todo.id} id={`todo-item-${todo.id}`}>
+            <CheckBox done={todo.done} onClick={() => toggleDone(todo)} id={todo.id} />
             <Text done={todo.done} onClick={() => toggleDone(todo)}>
               {todo.text}
             </Text>
@@ -140,15 +140,22 @@ const Checked = styled.div`
   align-items: center;
 `;
 
-const Check = ({ done, onClick }: { done?: boolean; onClick: () => void }) => {
-  if (done)
-    return (
-      <Checked onClick={onClick}>
-        <Image src={CheckSVG} alt="checked" />
-      </Checked>
-    );
-
-  return <NotChecked onClick={onClick} />;
+const CheckBox = ({ done, onClick, id }: { done: boolean; onClick: () => void; id: string }) => {
+  const checkBoxId = `todo-checkbox-${id}`;
+  return (
+    <div>
+      <input type="checkbox" checked={done} hidden id={checkBoxId} onChange={onClick} />
+      <label htmlFor={checkBoxId}>
+        {done ? (
+          <Checked>
+            <Image src={CheckSVG} alt="checked" />
+          </Checked>
+        ) : (
+          <NotChecked />
+        )}
+      </label>
+    </div>
+  );
 };
 
 const TodoItem = styled.div`

@@ -15,7 +15,7 @@ type Todos = {
 };
 
 const todoKey = 'todo';
-const todosState = atom({
+export const todosState = atom({
   key: todoKey,
   default: {} as Todos,
   effects: [

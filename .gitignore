@@ -1,0 +1,20 @@
+# Swap the comments on the following lines if you don't wish to use zero-installs
+# Documentation here: https://yarnpkg.com/features/zero-installs
+#/.pnp.*
+
+.idea
+.next
+node_modules
+
+# dist folder
+dist
+
+# Typescript incremental build info
+tsconfig.tsbuildinfo
+next-env.d.ts
+
+# ESLint cache file
+.eslintcache
+
+# macOS DSStore
+.DS_Store
